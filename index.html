@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Впечатление</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: radial-gradient(circle, #1a0a1a 0%, #000 100%);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            cursor: pointer;
+        }
+
+        .text-layer {
+            text-align: center;
+            z-index: 10;
+            pointer-events: none; /* Чтобы клик пролетал сквозь текст на фон */
+        }
+
+        h1 { font-size: 3.5rem; text-shadow: 0 0 20px #ff4d4d; margin: 0; }
+        p { font-size: 1.5rem; opacity: 0.8; margin-top: 10px; }
+
+        /* Центрированное интерактивное сердце */
+        #heart-canvas {
+            position: absolute;
+            filter: drop-shadow(0 0 15px #ff1a1a);
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="text-layer">
+        <h1>Ты мне нравишься, вижу твой ум</h1>
+        <p>Соглашайся</p>
+    </div>
+
+    <canvas id="heart-canvas"></canvas>
+    
+    <div class="hint">Кликни в любое место...</div>
+
+    <script>
+        const canvas = document.getElementById('heart-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 600;
+
+        // Математическая формула сердца
+        function getHeartPoint(t) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+            return { x: x * 15, y: -y * 15 }; // Масштабируем
+        }
+
+        let particles = [];
+        for (let i = 0; i < 200; i++) {
+            particles.push({ t: Math.random() * Math.PI * 2, size: Math.random() * 2 + 1 });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ff1a1a';
+            const time = Date.now() * 0.002;
+            const pulse = 1 + Math.sin(time * 2) * 0.1; // Пульсация
+
+            particles.forEach(p => {
+                const pos = getHeartPoint(p.t);
+                const x = pos.x * pulse + canvas.width / 2;
+                const y = pos.y * pulse + canvas.height / 2;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // Запуск салютов по клику
+        document.body.addEventListener('click', (e) => {
+            const colors = ['#ff0000', '#ff4d4d', '#ffffff', '#ff8080'];
+            
+            // Салют в месте клика
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight },
+                colors: colors
+            });
+
+            // Боковой салют для масштаба
+            confetti({
+                particleCount: 40,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors
+            });
+            confetti({
+                particleCount: 40,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: colors
+            });
+        });
+    </script>
+</body>
+</html>
